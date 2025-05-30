@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora de Negocio</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 15px;
+    background: #f4f4f4;
+  }
+  h1 {
+    text-align: center;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+  }
+  input[type=text], input[type=number] {
+    width: 100%;
+    padding: 8px;
+    margin-top: 3px;
+    box-sizing: border-box;
+  }
+  button {
+    margin-top: 10px;
+    padding: 10px;
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background-color: #333;
+    color: white;
+  }
+  .totals {
+    margin-top: 15px;
+    background: white;
+    padding: 10px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Calculadora de Negocio</h1>
+
+<label for="producto">Producto:</label>
+<input type="text" id="producto" placeholder="Nombre del producto" />
+
+<label for="cantidad">Cantidad:</label>
+<input type="number" id="cantidad" placeholder="Cantidad" min="1" />
+
+<label for="precio">Precio unitario ($):</label>
+<input type="number" id="precio" placeholder="Precio" min="0" step="0.01" />
+
+<button onclick="agregarProducto()">Agregar producto</button>
+
+<table id="tablaProductos">
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Precio Unitario</th>
+      <th>Subtotal</th>
+      <th>Eliminar</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div class="totals">
+  <label for="descuento">Descuento (%):</label>
+  <input type="number" id="descuento" value="0" min="0" max="100" step="1" oninput="actualizarTotales()" />
+
+  <p id="subtotalText">Subtotal: $0.00</p>
+  <p id="totalText">Total: $0.00</p>
+</div>
+
+<script>
+  let productos = [];
+
+  function agregarProducto() {
+    const nombre = document.getElementById('producto').value.trim();
+    const cantidad = parseInt(document.getElementById('cantidad').value);
+    const precio = parseFloat(document.getElementById('precio').value);
+
+    if (!nombre) {
+      alert('Por favor, ingrese un nombre de producto.');
+      return;
+    }
+    if (isNaN(cantidad) || cantidad < 1) {
+      alert('Ingrese una cantidad válida (mínimo 1).');
+      return;
+    }
+    if (isNaN(precio) || precio < 0) {
+      alert('Ingrese un precio válido (0 o mayor).');
+      return;
+    }
+
+    productos.push({ nombre, cantidad, precio });
+    actualizarTabla();
+    limpiarCampos();
+  }
+
+  function eliminarProducto(index) {
+    productos.splice(index, 1);
+    actualizarTabla();
+  }
+
+  function actualizarTabla() {
+    const tbody = document.querySelector('#tablaProductos tbody');
+    tbody.innerHTML = '';
+
+    productos.forEach((prod, i) => {
+      const subtotal = prod.cantidad * prod.precio;
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td>${prod.nombre}</td>
+        <td>${prod.cantidad}</td>
+        <td>$${prod.precio.toFixed(2)}</td>
+        <td>$${subtotal.toFixed(2)}</td>
+        <td><button onclick="eliminarProducto(${i})">❌</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    actualizarTotales();
+  }
+
+  function actualizarTotales() {
+    const subtotal = productos.reduce((acc, p) => acc + (p.cantidad * p.precio), 0);
+    let descuento = parseFloat(document.getElementById('descuento').value);
+    if (isNaN(descuento) || descuento < 0) descuento = 0;
+    if (descuento > 100) descuento = 100;
+
+    const total = subtotal * (1 - descuento / 100);
+
+    document.getElementById('subtotalText').textContent = `Subtotal: $${subtotal.toFixed(2)}`;
+    document.getElementById('totalText').textContent = `Total: $${total.toFixed(2)}`;
+  }
+
+  function limpiarCampos() {
+    document.getElementById('producto').value = '';
+    document.getElementById('cantidad').value = '';
+    document.getElementById('precio').value = '';
+    document.getElementById('producto').focus();
+  }
+</script>
+
+</body>
+</html>
